@@ -1,5 +1,5 @@
 const express = require("express");
-const bodyParser = require("body-parser");// convert the request body in POST request from a Buffer into readable string
+const bodyParser = require("body-parser");// converts the request body in POST request from a Buffer into readable string
 const app = express();
 const PORT = 8080;
 
@@ -7,6 +7,11 @@ app.set('view engine', 'ejs');
 
 //bodyparser makes the data in the input field avaialbe to us in the req.body.longURL variable, which we can store in our urlDatabase object
 app.use(bodyParser.urlencoded({extended: true}));
+
+//returns a string of 6 random alphanumeric characters:
+const generateRandomString = () => {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -30,8 +35,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.post("/urls", (req, res) => {
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 app.listen(PORT, () => {
