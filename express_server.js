@@ -1,8 +1,12 @@
 const express = require("express");
+const bodyParser = require("body-parser");// convert the request body in POST request from a Buffer into readable string
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
+
+//bodyparser makes the data in the input field avaialbe to us in the req.body.longURL variable, which we can store in our urlDatabase object
+app.use(bodyParser.urlencoded({extended: true}));
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -16,11 +20,13 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
