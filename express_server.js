@@ -19,7 +19,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!!!!");
+  res.send("Homepage");
 });
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
@@ -39,6 +39,12 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;//shortURL-longURL key-value pair are saved to the urlDatabase
   console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
+});
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  console.log(longURL);
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
