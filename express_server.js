@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //returns a string of 6 random alphanumeric characters:
 const generateRandomString = () => {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  return Math.random().toString(36).substring(2,8);
 };
 
 const urlDatabase = {
