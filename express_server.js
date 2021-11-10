@@ -27,7 +27,9 @@ app.get("/", (req, res) => {
 
 //READ all urls
 app.get("/urls", (req, res) => {
-  console.log('req.param', req.params);
+  //TODO checks value of cookie and don't display database unless logged in
+  const username = req.cookies;
+
   const templateVars = {
     username: req.cookies["username"],
     urls: urlDatabase
