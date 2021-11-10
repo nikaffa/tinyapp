@@ -28,26 +28,30 @@ app.get("/", (req, res) => {
 //READ all urls
 app.get("/urls", (req, res) => {
   console.log('req.param', req.params);
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
+  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
 //READ a form to submit a new url
 app.get("/urls/new", (req, res) => {
-  console.log('req.param', req.params);
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 //EDIT create a new shortURL after submission the form, saves it to database and redirects to its page
 app.post("/urls", (req, res) => {
-  console.log('req.body', req.body);
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;//shortURL-longURL key-value pair are saved to the urlDatabase
-  console.log(urlDatabase);
+  urlDatabase[shortURL] = req.body.longURL; //shortURL-longURL key-value pair are saved to the urlDatabase
   res.redirect(`/urls/${shortURL}`);
 });
 
-//EDIT loggin in
+//EDIT logging in
 app.post("/login", (req, res) => {
   //get info from req.body
   const username = req.body;
@@ -60,9 +64,13 @@ app.post("/login", (req, res) => {
 //READ a new created shortURL after submission the NewURL form
 app.get("/urls/:shortURL", (req, res) => {
   console.log('req.param', req.params);
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = {
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]
+  };
   res.render("urls_show", templateVars);
-  res.redirect("/urls");
+  //res.redirect("/urls");
 });
 
 //TODO: EDIT a single URL - what's after submission?
