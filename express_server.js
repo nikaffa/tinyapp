@@ -45,11 +45,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-//READ a new created shortURL after submitting the form
+//READ a new created shortURL after submitting the NewURL form
 app.get("/urls/:shortURL", (req, res) => {
   console.log('req.param', req.params);
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+});
+
+//TODO: what's after submitting?? EDIT a single URL
+app.post("/urls/:shortURL", (req,res) => {
+  const shortURL = req.params.shortURL;
+  res.redirect(shortURL); // redirects to the urls_show page
 });
 
 //DELETE a single URL

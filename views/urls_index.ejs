@@ -17,6 +17,7 @@
           <tr>
             <th scope="col">Short URL</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
         </thead>
@@ -24,12 +25,17 @@
           <% for (let url in urls) { %>
             <tr>
               <td><%= url %></td>
-              <!-- TODO: Add a link for shortening a new URL. This will be a dead link for now (href='#') as we will build the page for this functionality later. -->
-              <td><a href="/urls/:shortURL"><%= urls[url] %></a></td>
+              <!-- TODO: incorrent link, should redirect to long url-->
+              <td><a href="/urls/<%= url %>"><%= urls[url] %></a></td>
               <td>
-                <form method="POST" action="/urls/9sm5xK/delete">
-                <button type="submit">Delete</button>
-              </form>
+                <form method="POST" action="/urls/<%= url %>">
+                  <button type="submit" class="btn btn-outline-primary">Edit</button>
+                </form>
+              </td> 
+              <td>
+                <form method="POST" action="/urls/<%= url %>/delete">
+                  <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
               </td> 
             </tr>         
           <% } %>
