@@ -1,9 +1,9 @@
 const express = require("express");
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-
-const PORT = 8080;
 const app = express();
+app.use(cookieParser());
+const PORT = 8080;
 
 app.set('view engine', 'ejs');
 //middleware - logs information
@@ -47,6 +47,16 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+//EDIT loggin in
+app.post("/login", (req, res) => {
+  //get info from req.body
+  const username = req.body;
+  console.log('username', username);
+  //set a cookie named username to the value submitted in the login form
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
+
 //READ a new created shortURL after submission the NewURL form
 app.get("/urls/:shortURL", (req, res) => {
   console.log('req.param', req.params);
@@ -62,7 +72,6 @@ app.post("/urls/:shortURL", (req,res) => {
   res.redirect(shortURL); // redirects to the urls_show page
   //res.redirect("/urls"); //TODO redirect after updating
 });
-
 
 //DELETE a single URL
 app.post("/urls/:shortURL/delete", (req,res) => {
