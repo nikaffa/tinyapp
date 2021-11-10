@@ -10,11 +10,20 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <form method="POST" action="/login"> <!--TODO CSS shift to the left corner, add button class-->
-        <label>Logged in as: <%= username.username %> !</label>
-        <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
-        <button type="submit" class="btn btn-primary">Login</button>  
-      </form>
+      <% if (username) { %>
+        <form method="POST" action="/logout"> <!--TODO CSS shift to the left corner, add button class-->
+          <label>Logged in as: <%= username.username %> !</label>
+          <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
+          <button type="submit" class="btn btn-primary">Logout</button>  
+        </form>
+      <% } %>
+      
+      <% if (!username) { %>
+        <form method="POST" action="/login"> <!--TODO CSS shift to the left corner, add button class-->
+          <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
+          <button type="submit" class="btn btn-primary">Login</button>  
+        </form>
+      <% } %>
     </div>
   </nav>
 </header>

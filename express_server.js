@@ -61,6 +61,13 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+//EDIT logging out
+app.post("/logout", (req, res) => {
+  //clear cookie and logout
+  res.clearCookie("username");
+  return res.redirect("/urls");
+});
+
 //READ a new created shortURL after submission the NewURL form
 app.get("/urls/:shortURL", (req, res) => {
   console.log('req.param', req.params);
@@ -87,6 +94,7 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   delete urlDatabase[shortURL]; //delete the property in the database obj
   res.redirect("/urls");
 });
+
 
 //TODO: u/undefined
 app.get("/u/:shortURL", (req, res) => {
