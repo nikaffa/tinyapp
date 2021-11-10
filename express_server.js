@@ -1,12 +1,15 @@
 const express = require("express");
-const bodyParser = require("body-parser");// converts the request body in POST request from a Buffer into readable string
-const app = express();
+const morgan = require('morgan');
 const PORT = 8080;
+const app = express();
 
 app.set('view engine', 'ejs');
 
-//bodyparser makes the data in the input field avaialbe to us in the req.body.longURL variable, which we can store in our urlDatabase object
-app.use(bodyParser.urlencoded({extended: true}));
+//middleware - logs information
+app.use(morgan('dev'));
+
+//instead of bodyparse using express, extended:false means handle only the value from the client and nothing else
+app.use(express.urlencoded({ extended: false}));
 
 //returns a string of 6 random alphanumeric characters:
 const generateRandomString = () => {
