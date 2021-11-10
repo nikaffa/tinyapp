@@ -4,10 +4,8 @@ const PORT = 8080;
 const app = express();
 
 app.set('view engine', 'ejs');
-
 //middleware - logs information
 app.use(morgan('dev'));
-
 //instead of bodyparse using express, extended:false means handle only the value from the client and nothing else
 app.use(express.urlencoded({ extended: false}));
 
@@ -22,31 +20,50 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Homepage");
+  res.redirect(`/urls`);
 });
+
+//READ all urls
 app.get("/urls", (req, res) => {
+  console.log('req.param', req.params);
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
+//READ a form to submit a new url
 app.get("/urls/new", (req, res) => {
+  console.log('req.param', req.params);
   res.render("urls_new");
 });
-app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_show", templateVars);
-});
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+
+//EDIT create a new shortURL after submitting the form, saves it to database and redirects to its page
 app.post("/urls", (req, res) => {
+  console.log('req.body', req.body);
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;//shortURL-longURL key-value pair are saved to the urlDatabase
   console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
+
+//READ a new created shortURL after submitting the form
+app.get("/urls/:shortURL", (req, res) => {
+  console.log('req.param', req.params);
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render("urls_show", templateVars);
+});
+
+//DELETE a single URL
+app.post("/urls/:shortURL/delete", (req,res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL]; //delete the property in the database obj
+  res.redirect("/urls");
+});
+
+//TODO: u/undefined
 app.get("/u/:shortURL", (req, res) => {
+  console.log('req.param', req.params);
   const longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
+  console.log('longURL: ', longURL);
   res.redirect(longURL);
 });
 
