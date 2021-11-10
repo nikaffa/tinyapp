@@ -38,7 +38,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-//EDIT create a new shortURL after submitting the form, saves it to database and redirects to its page
+//EDIT create a new shortURL after submission the form, saves it to database and redirects to its page
 app.post("/urls", (req, res) => {
   console.log('req.body', req.body);
   let shortURL = generateRandomString();
@@ -47,7 +47,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-//READ a new created shortURL after submitting the NewURL form
+//READ a new created shortURL after submission the NewURL form
 app.get("/urls/:shortURL", (req, res) => {
   console.log('req.param', req.params);
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
@@ -55,7 +55,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-//TODO: EDIT a single URL - what's after submitting?
+//TODO: EDIT a single URL - what's after submission?
 app.post("/urls/:shortURL", (req,res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.longURL; //updates in the database
