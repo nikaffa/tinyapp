@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in</title>
+</head>
+
+<body>
+  <% if (!username) { %>
+    <form method="POST" action="/login"> <!--TODO CSS shift to the left corner, add button class-->
+      <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
+      <button type="submit" class="btn btn-primary">Login</button>  
+    </form>
+  <% } %>
+
+  <% if (username) { %>
+    <form method="POST" action="/logout"> <!--TODO CSS shift to the left corner, add button class-->
+      <!--TODO show the email value from the user object instead of the username. -->
+      <label>Logged in as: <%= email %> !</label>
+      <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
+      <button type="submit" class="btn btn-primary">Logout</button>  
+    </form>
+  <% } %>
+  
+  
+</body>
+</html>

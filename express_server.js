@@ -56,6 +56,11 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
+//READ login form
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
 //EDIT registration form
 app.post("/register", (req, res) => {
   //checking errors
