@@ -19,7 +19,8 @@
       
       <% if (username) { %>
         <form method="POST" action="/logout"> <!--TODO CSS shift to the left corner, add button class-->
-          <label>Logged in as: <%= username.username %> !</label>
+          <!--TODO show the email value from the user object instead of the username. -->
+          <label>Logged in as: <%= email %> !</label>
           <input type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
           <button type="submit" class="btn btn-primary">Logout</button>  
         </form>
