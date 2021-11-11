@@ -21,6 +21,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//READ registration form
+app.get("/register", (req, res) => {
+  res.render("register");
+});
 app.get("/", (req, res) => {
   res.redirect(`/urls`);
 });
