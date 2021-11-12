@@ -65,7 +65,6 @@ app.get("/register", (req, res) => {
   if (!users[userId]) {
     const templateVars = {
       user: null
-      //user: users[userId],
     };
     res.render("register", templateVars);
   }
@@ -84,18 +83,17 @@ app.post("/register", (req, res) => {
   if (user) {
     return res.status(400).send('Email already registered');
   }
-  //saving user to database
+  //saving user to the database
   const id = generateRandomString();
   const password = bcrypt.hashSync(rawPassword, 10); //hashing password
   users[id] = { id, email, password };
   console.log(users);
-  // adding a cookie and redirect to /urls (to log in automatically)
-  //res.cookie("user_id", id);
+  // adding a cookie session and redirect to /urls (to log in automatically)
   req.session.user_id = id;
   res.redirect("/urls");
 });
 
-//Login form
+//GET Login form
 app.get("/login", (req, res) => {
   const userId = req.session.user_id;
   if (users[userId]) {
@@ -103,7 +101,6 @@ app.get("/login", (req, res) => {
   } else if (!users[userId]) {
     const templateVars = {
       user: null
-      //user: users[userId],
     };
     res.render("login", templateVars);
   }
@@ -125,37 +122,30 @@ app.post("/login", (req, res) => {
   if (!bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Password does not match");
   }
-  //set the user_id cookie with that user's id
-  //res.cookie("user_id", user.id);
+  //set the user_id cookie session with that user's id
   req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
 //POST Logging out
 app.post("/logout", (req, res) => {
-  //clear cookie and logout
-  //res.clearCookie("user_id");
+  //clear cookie session and logout
   req.session = null;
   return res.redirect("/");
 });
 
 //GET Urls page
 app.get("/urls", (req, res) => {
-  //console.log(urlDatabase);
-  //console.log(users);
   const userId = req.session.user_id;
   //checking errors
   if (!userId) {
-    //res.redirect("login");
     return res.status(403).send("Login first");
   }
-  //TODO
   const userUrls = urlsForUser(userId);
   console.log(userUrls);
 
   const templateVars = {
     user: users[userId],
-    //TODO a setter?
     urls: userUrls
   };
   res.render("urls_index", templateVars);
@@ -204,14 +194,13 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//TODO checks EDIT longURL in a single URL after submission
+//EDIT longURL in a single URL after submission
 app.post("/urls/:shortURL", (req,res) => {
   const userId = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (!userId) {
     res.status(403).send("No permission");
   }
-
   if (!urlsForUser(userId)[shortURL]) {
     res.status(404).send("404: Not found");
   }
