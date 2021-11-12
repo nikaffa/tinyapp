@@ -1,16 +1,16 @@
 //Helper functions
 
-const helperFunction = (urlDatabase, users) => {
+const helperFunction = (urlDatabase) => {
 
   // checks if email belongs to a user in the users database
-  const getUserByEmail = (email) => {
+  const getUserByEmail = (email, users) => {
     for (const userId in users) {
       const user = users[userId];
       if (user.email === email) {
         return user;
       }
     }
-    return null;
+    return undefined;
   };
 
   //creates current user's database from global database

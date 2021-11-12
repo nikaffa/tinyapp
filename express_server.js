@@ -42,10 +42,9 @@ const {
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
   if (userId) {
-    res.redirect("/urls");
-  } else {
-    res.redirect("/login");
+    return res.redirect("/urls");
   }
+  res.redirect("/login");
 });
 
 //GET Registration form
@@ -53,9 +52,9 @@ app.get("/register", (req, res) => {
   const userId = req.session.user_id;
   if (!users[userId]) {
     const templateVars = {
-      user: null
+      user: undefined
     };
-    res.render("register", templateVars);
+    return res.render("register", templateVars);
   }
   res.redirect("/urls");
 });
@@ -68,7 +67,7 @@ app.post("/register", (req, res) => {
   if (!email || !rawPassword) {
     return res.status(400).send('Empty email or password');
   }
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (user) {
     return res.status(400).send('Email already registered');
   }
@@ -76,7 +75,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const password = bcrypt.hashSync(rawPassword, 10); //hashing password
   users[id] = { id, email, password };
-  console.log(users);
+  //console.log(users);
   // adding a cookie session and redirect to /urls (to log in automatically)
   req.session.user_id = id;
   res.redirect("/urls");
@@ -86,10 +85,11 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const userId = req.session.user_id;
   if (users[userId]) {
-    res.redirect("/urls");
-  } else if (!users[userId]) {
+    return res.redirect("/urls");
+  }
+  if (!users[userId]) {
     const templateVars = {
-      user: null
+      user: undefined
     };
     res.render("login", templateVars);
   }
@@ -103,7 +103,7 @@ app.post("/login", (req, res) => {
   if (!email || !password) {
     return res.status(403).send('Empty email or password');
   }
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (!user) {
     return res.status(403).send('Email not found');
   }
@@ -120,7 +120,7 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   //clear cookie session and logout
   req.session = null;
-  return res.redirect("/");
+  res.redirect("/");
 });
 
 //GET Urls page
@@ -131,7 +131,7 @@ app.get("/urls", (req, res) => {
     return res.status(403).send("Login first");
   }
   const userUrls = urlsForUser(userId);
-  console.log(userUrls);
+  //console.log(userUrls);
 
   const templateVars = {
     user: users[userId],
@@ -188,15 +188,15 @@ app.post("/urls/:shortURL", (req,res) => {
   const userId = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (!userId) {
-    res.status(403).send("No permission");
+    return res.status(403).send("No permission");
   }
   if (!urlsForUser(userId)[shortURL]) {
-    res.status(404).send("404: Not found");
+    return res.status(404).send("404: Not found"); //bugfix: make return to prevent:  Cannot set headers after they are sent to the client
   }
-  
   const data = { longURL: req.body.longURL, userId };
   urlDatabase[shortURL] = data;
   res.redirect(`/urls/${shortURL}`);
+  
 });
 
 //EDIT Delete a single URL
@@ -204,10 +204,10 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   const userId = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (!userId) {
-    res.status(403).send("No permission");
+    return res.status(403).send("No permission");
   }
   if (!urlsForUser(userId)[shortURL]) {
-    res.status(404).send("404: Not found");
+    return res.status(404).send("404: Not found");
   }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -217,7 +217,7 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("404: Not found");
+    return res.status(404).send("404: Not found");
   }
   // bugfix: forgot to call .longURL
   const redirectUrl = urlDatabase[shortURL].longURL;
