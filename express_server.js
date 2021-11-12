@@ -27,7 +27,6 @@ const users = {
   }
 };
 
-
 // checks if email belongs to a user in the users database
 const getUserByEmail = (email, database) => {
   for (const userId in database) {
