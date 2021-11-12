@@ -2,13 +2,13 @@ const express = require("express");
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const getUserByEmail = require('./helpers');
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(morgan('dev')); //middleware - logs information
-//instead of bodyparse using express, extended:false means handle only the value from the client and nothing else
-app.use(express.urlencoded({ extended: false}));
+app.use(express.urlencoded({ extended: false})); //instead of bodyParser
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
@@ -27,18 +27,7 @@ const users = {
   }
 };
 
-// checks if email belongs to a user in the users database
-const getUserByEmail = (email, database) => {
-  for (const userId in database) {
-    const user = database[userId];
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
-};
-
-//returns a string of 6 random alphanumeric characters:
+//returns a string of 6 random alphanumeric characters
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2,8);
 };
@@ -48,8 +37,6 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userId: "user2RandomID" },
 };
 
-
-//TODO: renders a user's url database
 const urlsForUser = (curUser) => {
   const userDatabase = {};
   for (const shortUrl in urlDatabase) {
@@ -99,7 +86,7 @@ app.post("/register", (req, res) => {
   }
   //saving user to database
   const id = generateRandomString();
-  const password = bcrypt.hashSync(rawPassword, 10);
+  const password = bcrypt.hashSync(rawPassword, 10); //hashing password
   users[id] = { id, email, password };
   console.log(users);
   // adding a cookie and redirect to /urls (to log in automatically)
@@ -120,7 +107,6 @@ app.get("/login", (req, res) => {
     };
     res.render("login", templateVars);
   }
-
 });
 
 //POST Submit Login form
@@ -135,10 +121,9 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(403).send('Email not found');
   }
-  //checks if password matches
+  //checks if password matches using bcrypt.compareSync
   if (!bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Password does not match");
-    
   }
   //set the user_id cookie with that user's id
   //res.cookie("user_id", user.id);
@@ -182,12 +167,10 @@ app.post("/urls", (req, res) => {
   if (!userId) {
     return res.redirect("/login");
   }
-  
   const shortURL = generateRandomString();
   const data = { longURL: req.body.longURL, userId };
   urlDatabase[shortURL] = data; //shortURL-longURL key-value pair are saved to the urlDatabase
   res.redirect('/urls');
-  
 });
 
 //GET Form to submit a new url
