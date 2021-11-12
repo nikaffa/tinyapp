@@ -2,12 +2,11 @@ const express = require("express");
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-const getUserByEmail = require('./helpers');
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
-app.use(morgan('dev')); //middleware - logs information
+app.use(morgan('dev')); //middleware - logs info into console
 app.use(express.urlencoded({ extended: false})); //instead of bodyParser
 app.use(cookieSession({
   name: 'session',
@@ -27,27 +26,17 @@ const users = {
   }
 };
 
-//returns a string of 6 random alphanumeric characters
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2,8);
-};
-
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userId: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userId: "user2RandomID" },
 };
 
-const urlsForUser = (curUser) => {
-  const userDatabase = {};
-  for (const shortUrl in urlDatabase) {
-    console.log(urlDatabase[shortUrl]);
-
-    if (urlDatabase[shortUrl].userId === curUser) {
-      userDatabase[shortUrl] = urlDatabase[shortUrl];
-    }
-  }
-  return userDatabase;
-};
+const helperFunction = require("./helpers");
+const {
+  getUserByEmail,
+  urlsForUser,
+  generateRandomString
+} = helperFunction(urlDatabase, users);
 
 //GET Login page
 app.get("/", (req, res) => {
@@ -79,7 +68,7 @@ app.post("/register", (req, res) => {
   if (!email || !rawPassword) {
     return res.status(400).send('Empty email or password');
   }
-  const user = getUserByEmail(email, users);
+  const user = getUserByEmail(email);
   if (user) {
     return res.status(400).send('Email already registered');
   }
@@ -114,7 +103,7 @@ app.post("/login", (req, res) => {
   if (!email || !password) {
     return res.status(403).send('Empty email or password');
   }
-  const user = getUserByEmail(email, users);
+  const user = getUserByEmail(email);
   if (!user) {
     return res.status(403).send('Email not found');
   }
