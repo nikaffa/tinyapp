@@ -63,7 +63,7 @@ app.get("/", (req, res) => {
 
 //GET Registration form
 app.get("/register", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.cookies["user_id"];
   if (!users[userId]) {
     const templateVars = {
       user: null
@@ -96,7 +96,7 @@ app.post("/register", (req, res) => {
 
 //Login form
 app.get("/login", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.cookies["user_id"];
   if (users[userId]) {
     res.redirect("/urls");
   } else if (!users[userId]) {
@@ -198,7 +198,7 @@ app.get("/urls/new", (req, res) => {
 
 //GET a new created shortURL after submission the urls/new form
 app.get("/urls/:shortURL", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.cookies["user_id"];
   if (!userId) {
     return res.redirect("/login");
   }
@@ -233,7 +233,7 @@ app.post("/urls/:shortURL", (req,res) => {
 
 //EDIT Delete a single URL
 app.post("/urls/:shortURL/delete", (req,res) => {
-  const userId = req.cookies.userId;
+  const userId = req.cookies["user_id"];
   if (!userId) {
     return res.redirect("/login");
   }
