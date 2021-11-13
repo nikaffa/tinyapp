@@ -2,7 +2,7 @@
 
 const helperFunction = (urlDatabase) => {
 
-  // checks if email belongs to a user in the users database
+  //checks if email belongs to a user in the users database
   const getUserByEmail = (email, users) => {
     for (const userId in users) {
       const user = users[userId];
@@ -24,7 +24,7 @@ const helperFunction = (urlDatabase) => {
     return userDatabase;
   };
 
-  //returns a string of 6 random alphanumeric characters
+  //creates a string of 6 random alphanumeric characters
   const generateRandomString = () => {
     return Math.random().toString(36).substring(2,8);
   };

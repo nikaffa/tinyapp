@@ -51,7 +51,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   if (!userId) {
-    return res.status(403).send("Login first");
+    return res.status(403).send("Login first"); //checks permissions
   }
   const userUrls = urlsForUser(userId);
   const templateVars = {
@@ -97,7 +97,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("404: Page not found");
   }
-  const redirectUrl = urlDatabase[shortURL].longURL; // bugfix: forgot to call .longURL
+  const redirectUrl = urlDatabase[shortURL].longURL;
   return res.redirect(redirectUrl);
 });
 
@@ -105,7 +105,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
   if (!userId) {
-    return res.status(403).send("Login first");
+    return res.status(403).send("Login first"); //checks permissions
   }
   //after submission saves into the urlDatabase shortURL:longURL key-value pair associated with the user
   const shortURL = generateRandomString();
@@ -123,7 +123,7 @@ app.post("/urls/:shortURL", (req,res) => {
   if (!urlsForUser(userId)[shortURL]) {
     return res.status(404).send("404: Page not found");
   }
-  //updates shortURL in urlDatabase
+  //updates shortURL in urlDatabase:
   urlDatabase[shortURL] = { longURL: req.body.longURL, userId };
   res.redirect("/urls/");
 });
@@ -172,19 +172,17 @@ app.get("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  //checking errors
   if (!email || !password) {
-    return res.status(403).send('Empty email or password');
+    return res.status(403).send('Empty email or password'); //checks empty fields
   }
   const user = getUserByEmail(email, users);
   if (!user) {
-    return res.status(403).send('Email not found');
+    return res.status(403).send('Email not found'); //checks if email matches
   }
-  //checks if password matches using bcrypt.compareSync
-  if (!bcrypt.compareSync(password, user.password)) {
+  if (!bcrypt.compareSync(password, user.password)) { //checks if password matches using bcrypt.compareSync
     return res.status(403).send("Password does not match");
   }
-  //set the user_id cookie session with that user's id
+  //set the user_id cookie session with that user's id:
   req.session["user_id"] = user.id;
   res.redirect("/urls");
 });
@@ -200,12 +198,12 @@ app.post("/register", (req, res) => {
   if (user) {
     return res.status(400).send('Email has already registered');
   }
-  //saving user to the database
+  //saves user to the database:
   const id = generateRandomString();
   const password = bcrypt.hashSync(rawPassword, 10); //hashing password
   users[id] = { id, email, password };
-  //adding a cookie session and redirect to /urls (to log in automatically)
-  req.session["user_id"] = id;
+  
+  req.session["user_id"] = id; //adds a cookie session and redirect to /urls (to log in automatically)
   res.redirect("/urls");
 });
 
