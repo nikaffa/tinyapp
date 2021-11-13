@@ -8,18 +8,20 @@
 <body>
   <%- include ('./partials/_header') %>
   
-    <div class="card-body">
-      <h4>Create Account</h4>
+    <div class="card-body justify-content-center" style="margin: 2em">
+      <h1>Create Account</h1>
         <form method="POST" action="/register">
-          <section>
+          <div>
             <label>Email</label>
+            <br>
             <input type="email" name="email" placeholder="Enter email" style="width: 300px; margin: 1em">
-          </section> 
-          <section>
+          </div> 
+          <div>
             <label>Password</label>
-            <input type="password" name="password" placeholder="password" style="width: 270px; margin: 1em">
+            <br>
+            <input type="password" name="password" placeholder="password" style="width: 300px; margin: 1em">
             <button type="submit" class="btn btn-info">Register</button>
-          </section>
+          </div>
         </form>
     </div>
   
