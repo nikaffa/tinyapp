@@ -6,8 +6,8 @@ const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
-app.use(morgan('dev')); //middleware - logs info into console
-app.use(express.urlencoded({ extended: false})); //instead of bodyParser
+app.use(morgan('dev')); //middleware: logs info into console
+app.use(express.urlencoded({ extended: false})); //instead of depricated bodyParser
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
@@ -38,7 +38,7 @@ const {
   generateRandomString
 } = helperFunction(urlDatabase, users);
 
-//GET Login page
+//GET /
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
   if (userId) {
@@ -47,41 +47,102 @@ app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-//GET Registration form
-app.get("/register", (req, res) => {
+//GET /urls (shows My URLS)
+app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
-  if (!users[userId]) {
-    const templateVars = {
-      user: undefined
-    };
-    return res.render("register", templateVars);
+  if (!userId) {
+    return res.status(403).send("Login first");
   }
+  const userUrls = urlsForUser(userId);
+  const templateVars = {
+    user: users[userId],
+    urls: userUrls
+  };
+  res.render("urls_index", templateVars);
+});
+
+//GET /urls/new (Creates New URL)
+app.get("/urls/new", (req, res) => {
+  const userId = req.session.user_id;
+  if (!userId) {
+    return res.redirect("/login");
+  }
+  const templateVars = {
+    user: users[userId]
+  };
+  res.render("urls_new", templateVars);
+});
+
+//GET /urls/:id (single shortURL)
+app.get("/urls/:shortURL", (req, res) => {
+  const userId = req.session.user_id;
+  const shortURL = req.params.shortURL;
+  if (!userId) {
+    return res.status(403).send("Login first"); //checks permissions
+  }
+  if (!urlsForUser(userId)[shortURL]) {
+    return res.status(404).send("404: Page not found"); //checks if page doesn't exist
+  }
+  const templateVars = {
+    user: users[userId],
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL].longURL
+  };
+  res.render("urls_show", templateVars);
+});
+
+//GET /u/:id (single shortURL)
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("404: Page not found");
+  }
+  const redirectUrl = urlDatabase[shortURL].longURL; // bugfix: forgot to call .longURL
+  return res.redirect(redirectUrl);
+});
+
+// POST /urls (creates a new shortURL, saves it to database and redirects to its page)
+app.post("/urls", (req, res) => {
+  const userId = req.session.user_id;
+  if (!userId) {
+    return res.status(403).send("Login first");
+  }
+  //after submission saves into the urlDatabase shortURL:longURL key-value pair associated with the user
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userId };
+  res.redirect(`/urls/${shortURL}`);
+});
+
+//POST /urls/:id (edits longURL after submission)
+app.post("/urls/:shortURL", (req,res) => {
+  const userId = req.session.user_id;
+  const shortURL = req.params.shortURL;
+  if (!userId) {
+    return res.status(403).send("No permission");
+  }
+  if (!urlsForUser(userId)[shortURL]) {
+    return res.status(404).send("404: Page not found");
+  }
+  //updates shortURL in urlDatabase
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userId };
+  res.redirect("/urls/");
+});
+
+//POST /urls/:id/delete (deletes a single shortURL)
+app.post("/urls/:shortURL/delete", (req,res) => {
+  const userId = req.session.user_id;
+  const shortURL = req.params.shortURL;
+  if (!userId) {
+    return res.status(403).send("No permission");
+  }
+  if (!urlsForUser(userId)[shortURL]) {
+    return res.status(404).send("404: Not found");
+  }
+  delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
-//POST Registration form - registers a new user
-app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const rawPassword = req.body.password;
-  //checking errors
-  if (!email || !rawPassword) {
-    return res.status(400).send('Empty email or password');
-  }
-  const user = getUserByEmail(email, users);
-  if (user) {
-    return res.status(400).send('Email already registered');
-  }
-  //saving user to the database
-  const id = generateRandomString();
-  const password = bcrypt.hashSync(rawPassword, 10); //hashing password
-  users[id] = { id, email, password };
-  //console.log(users);
-  // adding a cookie session and redirect to /urls (to log in automatically)
-  req.session.user_id = id;
-  res.redirect("/urls");
-});
-
-//GET Login form
+//GET /login (login form)
 app.get("/login", (req, res) => {
   const userId = req.session.user_id;
   if (users[userId]) {
@@ -95,7 +156,19 @@ app.get("/login", (req, res) => {
   }
 });
 
-//POST Submit Login form
+//GET /register (Registration form)
+app.get("/register", (req, res) => {
+  const userId = req.session.user_id;
+  if (!users[userId]) {
+    const templateVars = {
+      user: undefined
+    };
+    return res.render("register", templateVars);
+  }
+  res.redirect("/urls");
+});
+
+//POST /login (submits Login form - loggs in)
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -112,116 +185,34 @@ app.post("/login", (req, res) => {
     return res.status(403).send("Password does not match");
   }
   //set the user_id cookie session with that user's id
-  req.session.user_id = user.id;
+  req.session["user_id"] = user.id;
   res.redirect("/urls");
 });
 
-//POST Logging out
+//POST /register (submits registration form - creates new Account)
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const rawPassword = req.body.password;
+  if (!email || !rawPassword) {
+    return res.status(400).send('Empty email or password');
+  }
+  const user = getUserByEmail(email, users);
+  if (user) {
+    return res.status(400).send('Email has already registered');
+  }
+  //saving user to the database
+  const id = generateRandomString();
+  const password = bcrypt.hashSync(rawPassword, 10); //hashing password
+  users[id] = { id, email, password };
+  //adding a cookie session and redirect to /urls (to log in automatically)
+  req.session["user_id"] = id;
+  res.redirect("/urls");
+});
+
+//POST /logout (loggs out)
 app.post("/logout", (req, res) => {
-  //clear cookie session and logout
-  req.session = null;
+  req.session = null; //clears cookie session
   res.redirect("/");
-});
-
-//GET Urls page
-app.get("/urls", (req, res) => {
-  const userId = req.session.user_id;
-  //checking errors
-  if (!userId) {
-    return res.status(403).send("Login first");
-  }
-  const userUrls = urlsForUser(userId);
-  //console.log(userUrls);
-
-  const templateVars = {
-    user: users[userId],
-    urls: userUrls
-  };
-  res.render("urls_index", templateVars);
-});
-
-//EDIT create a new shortURL after submission the form, saves it to database and redirects to its page
-app.post("/urls", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
-    return res.redirect("/login");
-  }
-  const shortURL = generateRandomString();
-  const data = { longURL: req.body.longURL, userId };
-  urlDatabase[shortURL] = data; //shortURL-longURL key-value pair are saved to the urlDatabase
-  res.redirect('/urls');
-});
-
-//GET Form to submit a new url
-app.get("/urls/new", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
-    return res.redirect("/login");
-  }
-  const templateVars = {
-    user: users[userId]
-  };
-  res.render("urls_new", templateVars);
-});
-
-//GET a new created shortURL after submission the urls/new form
-app.get("/urls/:shortURL", (req, res) => {
-  const userId = req.session.user_id;
-  const shortURL = req.params.shortURL;
-  if (!userId) {
-    return res.redirect("/login");
-  }
-  if (!urlsForUser(userId)[shortURL]) {
-    return res.redirect("/urls");
-  }
-
-  const templateVars = {
-    user: users[userId],
-    shortURL: shortURL,
-    longURL: urlDatabase[shortURL].longURL
-  };
-  res.render("urls_show", templateVars);
-});
-
-//EDIT longURL in a single URL after submission
-app.post("/urls/:shortURL", (req,res) => {
-  const userId = req.session.user_id;
-  const shortURL = req.params.shortURL;
-  if (!userId) {
-    return res.status(403).send("No permission");
-  }
-  if (!urlsForUser(userId)[shortURL]) {
-    return res.status(404).send("404: Not found"); //bugfix: make return to prevent:  Cannot set headers after they are sent to the client
-  }
-  const data = { longURL: req.body.longURL, userId };
-  urlDatabase[shortURL] = data;
-  res.redirect(`/urls/${shortURL}`);
-  
-});
-
-//EDIT Delete a single URL
-app.post("/urls/:shortURL/delete", (req,res) => {
-  const userId = req.session.user_id;
-  const shortURL = req.params.shortURL;
-  if (!userId) {
-    return res.status(403).send("No permission");
-  }
-  if (!urlsForUser(userId)[shortURL]) {
-    return res.status(404).send("404: Not found");
-  }
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
-});
-
-//GET u/
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  if (!urlDatabase[shortURL]) {
-    return res.status(404).send("404: Not found");
-  }
-  // bugfix: forgot to call .longURL
-  const redirectUrl = urlDatabase[shortURL].longURL;
-  return res.redirect(redirectUrl);
 });
 
 app.listen(PORT, () => {
